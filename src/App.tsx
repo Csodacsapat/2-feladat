@@ -1,24 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useState} from 'react';
+import SideMenu from "./component/SideMenu/SideMenu";
+import {Box} from "@mui/material";
+import {DrawData} from "./utils/DrawData";
+
+
 
 function App() {
+
+    const [drawData,setDrawData] = useState<DrawData>({xPoint:0,yPoint:0})
+
+    const getDataBack = (data:DrawData) =>{
+        setDrawData(data)
+    }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+        <Box sx={{display:"flex"}}>
+            <SideMenu sendDataBack={getDataBack}/>
+        </Box>
     </div>
   );
 }
