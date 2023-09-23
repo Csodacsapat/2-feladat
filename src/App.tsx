@@ -3,8 +3,6 @@ import SideMenu from "./component/SideMenu/SideMenu";
 import {Box} from "@mui/material";
 import {DrawData} from "./utils/DrawData";
 
-
-
 function App() {
 
     const [drawData,setDrawData] = useState<DrawData>({xPoint:0,yPoint:0})
