@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {DrawData} from "../../utils/DrawData";
 import {Box, Button, TextField} from "@mui/material";
+import { Vector, Matrix } from 'ts-matrix';
 
 type props = {
     sendDataBack: Function
@@ -9,7 +10,6 @@ type props = {
 export default function SideMenu({sendDataBack}: props) {
 
     const [drawData, setDrawData] = useState<DrawData>({xPoint: 5, yPoint: 4})
-
     return <Box sx={{display: "flex", flexDirection: "column"}}>
         <TextField type="number" id="outlined-basic" label="Horizontális pontok száma" variant="outlined"
                    value={drawData.xPoint} onChange={
