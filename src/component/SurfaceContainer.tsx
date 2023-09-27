@@ -1,66 +1,62 @@
 import {DrawData} from "../utils/DrawData";
-import {useEffect, useRef} from "react";
-import { mat4 } from "gl-matrix";
-import {factorial} from "../utils/helpers/factorial"
+import React, {MutableRefObject, useEffect, useRef} from "react";
+import {vertexShaderSource, fragmentShaderSource} from "../utils/shaders/shaders";
+import {bezierBaseFunction} from "../utils/helpers/bezierBaseFunction";
+
 type props = {
     drawData: DrawData
+}
+type Points = {
+    x: number,
+    y: number,
+    z: number
 }
 
 export function SurfaceContainer({drawData}: props) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
+    const program: MutableRefObject<WebGLProgram | null> = useRef(null);
+    const pointsProgram: MutableRefObject<WebGLProgram | null> = useRef(null);
+    const vertexShader: MutableRefObject<WebGLShader | null> = useRef(null);
+    const fragmentShader: MutableRefObject<WebGLShader | null> = useRef(null);
+
+    function init(gl: WebGL2RenderingContext) {
+        if (!vertexShader.current || !fragmentShader.current || !program.current || !pointsProgram.current) {
+            return;
+        }
+        gl.shaderSource(vertexShader.current, vertexShaderSource);
+        gl.compileShader(vertexShader.current);
+
+        gl.shaderSource(fragmentShader.current, fragmentShaderSource);
+        gl.compileShader(fragmentShader.current);
+
+        gl.attachShader(program.current, vertexShader.current);
+        gl.attachShader(pointsProgram.current, vertexShader.current);
+        gl.attachShader(program.current, fragmentShader.current);
+        gl.attachShader(pointsProgram.current, fragmentShader.current);
+        gl.linkProgram(program.current);
+        gl.linkProgram(pointsProgram.current);
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const gl = canvas.getContext('webgl2');
+        const gl = canvas.getContext('webgl2', {antialias: true});
         if (!gl) {
             console.error('WebGL is not supported');
             return;
         }
+        program.current = gl.createProgram();
+        pointsProgram.current = gl.createProgram();
 
-        const vertexShaderSource = `
-      attribute vec2 coordinates;
-      void main(void) {
-        gl_Position = vec4(coordinates, 0.0, 1.0);
-        gl_PointSize = 5.0;
-      }
-    `;
+        vertexShader.current = gl.createShader(gl.VERTEX_SHADER);
+        fragmentShader.current = gl.createShader(gl.FRAGMENT_SHADER);
 
-        // Fragment shader for drawing points
-        const fragmentShaderSource = `
-      void main(void) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color
-      }
-    `;
-
-        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        const program = gl.createProgram();
-        const pointsProgram = gl.createProgram();
-
-        if (!vertexShader || !fragmentShader || !program || !pointsProgram) {
-            return;
-        }
-
-        gl.shaderSource(vertexShader, vertexShaderSource);
-        gl.compileShader(vertexShader);
-
-        gl.shaderSource(fragmentShader, fragmentShaderSource);
-        gl.compileShader(fragmentShader);
-
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(pointsProgram, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.attachShader(pointsProgram, fragmentShader);
-        gl.linkProgram(program);
-        gl.useProgram(program);
-
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
+        init(gl)
         // Az itt létrehozott adatok a Bézier felület vezérlőpontjai lennének
-        const controlPoints = [
+        const controlPoints: Points[][] = [
             [{x: -0.8, y: -0.8, z: 0.0}, {x: -0.8, y: -0.6, z: 0.0}, {x: -0.8, y: 0.0, z: 0.0}, {
                 x: -0.8,
                 y: 0.6,
@@ -80,155 +76,90 @@ export function SurfaceContainer({drawData}: props) {
             [{x: 0.8, y: -0.8, z: 0.0}, {x: 0.8, y: -0.6, z: 0.0}, {x: 0.8, y: 0.0, z: 0.0}, {x: 0.8, y: 0.6, z: 0.0}],
         ];
 
+        drawPoints(gl, controlPoints.flat());
+        drawBezierSurface(gl, controlPoints);
 
-        // Calculate points on the Bezier curve
-        const curvePoints = calculateBezierCurve(controlPoints);
-        let lasPoint = controlPoints[3]
-        curvePoints.push(lasPoint)
+    }, [drawData.xPoint, drawData.yPoint]);
 
-        drawPoints(gl, pointsProgram, controlPoints.flat());
-        // Draw the Bezier curve
-        drawBezierSurface(gl, program, curvePoints);
-        /*gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(controlPoints), gl.STATIC_DRAW);
+    function drawBezierSurface(gl: any, controlPoints: Points[][]) {
+        const n = controlPoints.length;
+        const m = controlPoints[0].length;
+        const bezierPointsHorizontally: number[][] = new Array(n).fill([]).map(() => []);
+        const bezierPointsVertically: number[][] = new Array(n).fill([]).map(() => []);
 
-        const vao = gl.createVertexArray();
-        if (!vao) {
-            return;
-        }
-        gl.bindVertexArray(vao);
-        gl.enableVertexAttribArray(positionAttributeLocation);
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < m; j++) {
+                let x, y, z;
+                for (let u = 0; u < 1; u = u + 0.01) {
+                    for (let v = 0; v < 1; v = v + 0.1) {
+                        x = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].x;
+                        y = controlPoints[i][j].y;
+                        z = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].z;
+                        bezierPointsHorizontally[j].push(x, y, z)
 
-        const size = 3;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
-        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor(255, 255, 255, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        //const numberOfPoints = 100; // Pontok száma a görbén
-        const bezierPoints = [];
-
-
-        const point = calculateBezierPoint(controlPoints);
-        //bezierPoints.push(point[0], point[1]);
-
-
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(point), gl.STATIC_DRAW);
-        gl.lineWidth(2.0)
-        gl.drawArrays(gl.LINE_STRIP, 0, point.length);*/
-
-   }, [drawData.xPoint, drawData.yPoint]);
-
-    function calculateBezierCurve(controlPoints: any) {
-        // Calculate Bezier curve points
-        const curvePoints = [];
-        const numSegments = 100; // Detail of the curve
-
-        for (let t = 0; t <= 1; t += 1 / numSegments) {
-            const point = bezierInterpolation(controlPoints, t);
-            curvePoints.push(point);
+                    }
+                }
+                bezierPointsHorizontally[j].push(controlPoints[i][j].x, controlPoints[i][j].y, controlPoints[i][j].z)
+                for (let v = 0; v < 1; v += 0.01) {
+                    for (let u = 0; u < 1; u += 0.1) {
+                        x = controlPoints[i][j].x;
+                        y = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].y;
+                        z = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].z;
+                        bezierPointsVertically[i].push(x, y, z)
+                    }
+                }
+                bezierPointsVertically[i].push(controlPoints[i][j].x, controlPoints[i][j].y, controlPoints[i][j].z)
+            }
         }
 
-        return curvePoints;
-    }
-
-    function bezierInterpolation(points: any, t: any): any {
-        if (points.length === 1) {
-            return points[0];
-        }
-
-        const interpolatedPoints = [];
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const x = (1 - t) * points[i].x + t * points[i + 1].x;
-            const y = (1 - t) * points[i].y + t * points[i + 1].y;
-            interpolatedPoints.push({x, y});
-        }
-
-        return bezierInterpolation(interpolatedPoints, t);
-    }
-
-    function drawBezierSurface(gl: any, shaderProgram: any, curvePoints: any) {
-        // Draw the Bezier curve
-        const coordinates = [];
-        const uPTS = curvePoints[0].length
-        const wPTS = curvePoints.length;
-        const uCELLS = 10;
-        const wCELLS = 20;
-        const n = uPTS-1;
-        const m = wPTS-1;
-        const u = linSpace(uCELLS);
-        const w = linSpace(wCELLS);
-
-        for (const point of curvePoints) {
-            coordinates.push(point.x, point.y);
-        }
-
-        const cu:number[] = []
-        const cw:number[]   = []
-        for(let i= 0; i< n; i++){
-            const currentCU = factorial(n) / (factorial(i)*factorial(n-i))
-            cu.push(currentCU);
-        }
-        for(let j = 0 ; j<m ;j++){
-            const currentCW = factorial(m) / (factorial(j)*factorial(n-j))
-            cw.push(currentCW)
-        }
-
-        for (let k=1;k < uPTS;k++){
-
-        }
-
-        // Create vertex buffer and upload data
         const vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordinates), gl.STATIC_DRAW);
+        for (let i = 0; i < bezierPointsHorizontally.length; i++) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bezierPointsHorizontally[i]), gl.STATIC_DRAW);
 
-        // Prepare for drawing
-        const coord = gl.getAttribLocation(shaderProgram, "coordinates");
-        gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(coord);
+            const coord = gl.getAttribLocation(program.current as WebGLProgram, "controlPoints");
+            gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(coord);
 
-        // Drawing
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        //gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.drawArrays(gl.LINE_STRIP, 0, curvePoints.length);
-    }
-    function linSpace(num:number) {
-        const startValue:number = 0
-        const stopValue:number = 1
-        const cardinality:number = num
-        const arr = [];
-        const step = (stopValue - startValue) / (cardinality - 1);
-        for (let i = 0; i < cardinality; i++) {
-            arr.push(startValue + (step * i));
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            gl.drawArrays(gl.LINE_STRIP, 0, bezierPointsHorizontally[i].length / 3);
+
         }
-        return arr;
-    }
-    function drawPoints(gl: any, shaderProgram: any, points: any) {
-        // Draw points on the canvas
-        const coordinates = [];
 
+        for (let i = 0; i < bezierPointsVertically.length; i++) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bezierPointsVertically[i]), gl.STATIC_DRAW);
+
+            const coord = gl.getAttribLocation(program.current as WebGLProgram, "controlPoints");
+            gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(coord);
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            gl.drawArrays(gl.LINE_STRIP, 0, bezierPointsVertically[i].length / 3);
+
+        }
+    }
+
+    function drawPoints(gl: any, points: any) {
+        const controlPoints = [];
+        gl.useProgram(pointsProgram.current);
         for (const point of points) {
-            coordinates.push(point.x, point.y);
+            controlPoints.push(point.x, point.y, point.z);
         }
-
         const vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordinates), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(controlPoints), gl.STATIC_DRAW);
+        gl.lineWidth(5)
+        let attribLocation = gl.getAttribLocation(pointsProgram.current as WebGLProgram, "controlPoints");
 
-        const coord = gl.getAttribLocation(shaderProgram, "coordinates");
-        gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(coord);
+        gl.vertexAttribPointer(attribLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(attribLocation);
 
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.useProgram(shaderProgram);
-        gl.drawArrays(gl.POINTS, 0, points.length);
+        gl.drawArrays(gl.POINTS, 0, controlPoints.length / 3);
     }
 
     if (!drawData.xPoint || !drawData.yPoint) {
