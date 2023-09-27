@@ -57,7 +57,7 @@ export function SurfaceContainer({drawData}: props) {
         init(gl)
         // Az itt létrehozott adatok a Bézier felület vezérlőpontjai lennének
         const controlPoints: Points[][] = [
-            [{x: -0.8, y: -0.8, z: 0.0}, {x: -0.8, y: -0.6, z: 0.0}, {x: -0.8, y: 0.0, z: 0.0}, {
+            [{x: -0.8, y: -0.8, z: 0.0}, {x: -0.8, y: -0.5, z: 0.0}, {x: -0.8, y: 0.0, z: 0.0}, {
                 x: -0.8,
                 y: 0.6,
                 z: 0.0
