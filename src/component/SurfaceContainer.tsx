@@ -84,12 +84,14 @@ export function SurfaceContainer({drawData}: props) {
     function drawBezierSurface(gl: any, controlPoints: Points[][]) {
         const n = controlPoints.length;
         const m = controlPoints[0].length;
-        const bezierPointsHorizontally: number[][] = new Array(n).fill([]).map(() => []);
+        const bezierPointsHorizontally: number[][] = new Array(m).fill([]).map(() => []);
         const bezierPointsVertically: number[][] = new Array(n).fill([]).map(() => []);
 
+        //az első 2 forciklus a pontok aik kockával jelennek meg
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < m; j++) {
                 let x, y, z;
+                //horizontális szakaszok számítása
                 for (let u = 0; u < 1; u = u + 0.01) {
                     for (let v = 0; v < 1; v = v + 0.1) {
                         x = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].x;
@@ -100,6 +102,7 @@ export function SurfaceContainer({drawData}: props) {
                     }
                 }
                 bezierPointsHorizontally[j].push(controlPoints[i][j].x, controlPoints[i][j].y, controlPoints[i][j].z)
+                //vertikális szakaszok
                 for (let v = 0; v < 1; v += 0.01) {
                     for (let u = 0; u < 1; u += 0.1) {
                         x = controlPoints[i][j].x;
