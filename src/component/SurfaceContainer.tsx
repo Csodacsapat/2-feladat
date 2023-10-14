@@ -53,7 +53,6 @@ export function SurfaceContainer({drawData}: props) {
         fragmentShader.current = gl.createShader(gl.FRAGMENT_SHADER);
 
         init(gl)
-        // Az itt létrehozott adatok a Bézier felület vezérlőpontjai lennének
         const controlPoints: Points[][] = [
             [{x: -0.8, y: -0.8, z: 0.0}, {x: -0.8, y: -0.5, z: 0.0}, {x: -0.8, y: 0.0, z: 0.0}, {
                 x: -0.8,
@@ -82,82 +81,55 @@ export function SurfaceContainer({drawData}: props) {
     function drawBezierSurface(gl: any, controlPoints: Points[][]) {
         const n = controlPoints.length;
         const m = controlPoints[0].length;
-        const bezierPointsHorizontally: number[][] = new Array(100).fill([]).map(() => []);
-        const bezierPointsVertically: number[][] = new Array(11000).fill([]).map(() => []);
+        const bezierPointsHorizontally: number[][] = new Array(200).fill([]).map(() => []);
+        const bezierPointsVertically: number[][] = new Array(200).fill([]).map(() => []);
         let k: number = 0
-        for (let u = 0; u <= 1; u = u + 0.01) {
-            for (let v = 0; v <= 1; v = v + 0.1) {
+        for (let u = 0; u <= 1; u = Number((u + 0.01).toFixed(2))) {
+            for (let v = 0; v <= 1; v = Number((v + 0.1).toFixed(2))) {
                 let x = 0, y = 0, z = 0;
                 for (let i = 0; i < n; i++) {
                     for (let j = 0; j < m; j++) {
-                        x += bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].x;
-                        //y += bezierBaseFunction(n, i, v) * bezierBaseFunction(m, j, u) * controlPoints[i][j].y;
-                        y += bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].y;
-                        //y =  controlPoints[i][j].y;
-                        z += bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].z;
-                        //z += 0
+                        x += bezierBaseFunction(m - 1, j, u) * bezierBaseFunction(n - 1, i, v) * controlPoints[i][j].x;
+                        y += bezierBaseFunction(m - 1, j, u) * bezierBaseFunction(n - 1, i, v) * controlPoints[i][j].y;
+                        z += bezierBaseFunction(m - 1, j, u) * bezierBaseFunction(n - 1, i, v) * controlPoints[i][j].z;
                     }
                 }
                 bezierPointsHorizontally[k].push(x, y, z)
             }
             k++;
         }
-
-        /* for (let i = 0; i < n; i++) {
-             for (let j = 0; j < m; j++) {
-                 let x, y, z;
-                 for (let u = 0; u < 1; u = u + 0.01) {
-                     for (let v = 0; v < 1; v = v + 0.1) {
-                         x = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].x;
-                         y = controlPoints[i][j].y;
-                         z = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].z;
-                         bezierPointsHorizontally[j].push(x, y, z)
-
-                     }
-                 }
-                 bezierPointsHorizontally[j].push(controlPoints[i][j].x, controlPoints[i][j].y, controlPoints[i][j].z)
-                 for (let v = 0; v < 1; v += 0.01) {
-                     for (let u = 0; u < 1; u += 0.1) {
-                         x = controlPoints[i][j].x;
-                         y = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].y;
-                         z = bezierBaseFunction(n, i, u) * bezierBaseFunction(m, j, v) * controlPoints[i][j].z;
-                         bezierPointsVertically[i].push(x, y, z)
-                     }
-                 }
-                 bezierPointsVertically[i].push(controlPoints[i][j].x, controlPoints[i][j].y, controlPoints[i][j].z)
-             }
-         }
- */
-        //console.log(bezierPointsHorizontally.splice(100))
-        const vertexBuffer = gl.createBuffer();
-
-        //for (let i = 0; i < bezierPointsHorizontally.length; i++) {
-        for (let i = 0; i < 1; i++) {
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bezierPointsHorizontally[i]), gl.STATIC_DRAW);
-
-            const cord: GLint = gl.getAttribLocation(program.current as WebGLProgram, "controlPoints");
-            gl.vertexAttribPointer(cord, 3, gl.FLOAT, true, 0, 0);
-            gl.enableVertexAttribArray(cord);
-
-            //gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            //gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-            gl.drawArrays(gl.LINE_STRIP, 0, bezierPointsHorizontally[i].length / 3);
-
+        k = 0
+        for (let u = 0; u <= 1; u = Number((u + 0.01).toFixed(2))) {
+            for (let v = 0; v <= 1; v = Number((v + 0.1).toFixed(2))) {
+                let x = 0, y = 0, z = 0;
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < m; j++) {
+                        x += bezierBaseFunction(n - 1, i, u) * bezierBaseFunction(m - 1, j, v) * controlPoints[i][j].x;
+                        y += bezierBaseFunction(n - 1, i, u) * bezierBaseFunction(m - 1, j, v) * controlPoints[i][j].y;
+                        z += bezierBaseFunction(n - 1, i, u) * bezierBaseFunction(m - 1, j, v) * controlPoints[i][j].z;
+                    }
+                }
+                bezierPointsVertically[k].push(x, y, z)
+            }
+            k++;
         }
-        /*
-                for (let i = 0; i < bezierPointsVertically.length; i++) {
-                    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bezierPointsVertically[i]), gl.STATIC_DRAW);
 
-                    const coord = gl.getAttribLocation(program.current as WebGLProgram, "controlPoints");
-                    gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
-                    gl.enableVertexAttribArray(coord);
-                    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-                    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-                    gl.drawArrays(gl.LINE_STRIP, 0, bezierPointsVertically[i].length / 3);
 
-                }*/
+        drawLines(gl,bezierPointsHorizontally);
+        drawLines(gl,bezierPointsVertically);
+    }
+
+    const drawLines = (gl:WebGL2RenderingContext,arrayOfPoints:number[][]) =>{
+        const vertexBuffer = gl.createBuffer();
+        for (let i = 0; i < arrayOfPoints.length; i++) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrayOfPoints[i]), gl.STATIC_DRAW);
+
+            const coord = gl.getAttribLocation(program.current as WebGLProgram, "controlPoints");
+            gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(coord);
+            gl.drawArrays(gl.LINE_STRIP, 0, arrayOfPoints[i].length / 3);
+        }
     }
 
     function drawPoints(gl: any, points: any) {
