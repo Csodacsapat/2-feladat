@@ -2,14 +2,11 @@ import {DrawData} from "../utils/DrawData";
 import React, {MutableRefObject, useEffect, useRef} from "react";
 import {vertexShaderSource, fragmentShaderSource} from "../utils/shaders/shaders";
 import {bezierBaseFunction} from "../utils/helpers/bezierBaseFunction";
+import {Points} from "../types/Points";
+import {createControlPoints} from "../utils/helpers/controlPoint";
 
 type props = {
     drawData: DrawData
-}
-type Points = {
-    x: number,
-    y: number,
-    z: number
 }
 
 export function SurfaceContainer({drawData}: props) {
@@ -53,25 +50,7 @@ export function SurfaceContainer({drawData}: props) {
         fragmentShader.current = gl.createShader(gl.FRAGMENT_SHADER);
 
         init(gl)
-        const controlPoints: Points[][] = [
-            [{x: -0.8, y: -0.8, z: 0.0}, {x: -0.8, y: -0.5, z: 0.0}, {x: -0.8, y: 0.0, z: 0.0}, {
-                x: -0.8,
-                y: 0.6,
-                z: 0.0
-            }],
-            [{x: -0.6, y: -0.8, z: 0.0}, {x: -0.6, y: -0.6, z: 0.0}, {x: -0.6, y: 0.0, z: 0.0}, {
-                x: -0.6,
-                y: 0.6,
-                z: 0.0
-            }],
-            [{x: -0.2, y: -0.8, z: 0.0}, {x: -0.2, y: -0.6, z: 0.0}, {x: -0.2, y: 0.0, z: 0.0}, {
-                x: -0.2,
-                y: 0.6,
-                z: 0.0
-            }],
-            [{x: 0.2, y: -0.8, z: 0.0}, {x: 0.2, y: -0.6, z: 0.0}, {x: 0.2, y: 0.0, z: 0.0}, {x: 0.2, y: 0.6, z: 0.0}],
-            [{x: 0.8, y: -0.8, z: 0.0}, {x: 0.8, y: -0.6, z: 0.0}, {x: 0.8, y: 0.0, z: 0.0}, {x: 0.8, y: 0.6, z: 0.0}],
-        ];
+        const controlPoints: Points[][] = createControlPoints(drawData);
 
         drawPoints(gl, controlPoints.flat());
         drawBezierSurface(gl, controlPoints);
@@ -98,6 +77,7 @@ export function SurfaceContainer({drawData}: props) {
             }
             k++;
         }
+        console.log(bezierPointsHorizontally)
         k = 0
         for (let u = 0; u <= 1; u = Number((u + 0.01).toFixed(2))) {
             for (let v = 0; v <= 1; v = Number((v + 0.1).toFixed(2))) {

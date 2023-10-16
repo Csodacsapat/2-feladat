@@ -6,3 +6,10 @@ export function squashMatrix(matrix: Matrix) : number[] {
     }
     return matrix.values.reduce((accumulator, currentArray) => accumulator.concat(currentArray), []);
 }
+
+export function squashArray(matrix: number[][]) : number[] {
+    if (!matrix) {
+        throw Error("squashArray Matrix is null!")
+    }
+    return matrix.reduce((accumulator, currentArray) => accumulator.concat(currentArray), []);
+}
