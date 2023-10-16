@@ -60,10 +60,11 @@ export function SurfaceContainer({drawData}: props) {
     function drawBezierSurface(gl: any, controlPoints: Points[][]) {
         const n = controlPoints.length;
         const m = controlPoints[0].length;
-        const bezierPointsHorizontally: number[][] = new Array(200).fill([]).map(() => []);
-        const bezierPointsVertically: number[][] = new Array(200).fill([]).map(() => []);
-        let k: number = 0
+        const bezierPointsHorizontally: number[][] = []
+        const bezierPointsVertically: number[][] = []
+
         for (let u = 0; u <= 1; u = Number((u + 0.01).toFixed(2))) {
+            let row: number[] = []
             for (let v = 0; v <= 1; v = Number((v + 0.1).toFixed(2))) {
                 let x = 0, y = 0, z = 0;
                 for (let i = 0; i < n; i++) {
@@ -73,25 +74,26 @@ export function SurfaceContainer({drawData}: props) {
                         z += bezierBaseFunction(m - 1, j, u) * bezierBaseFunction(n - 1, i, v) * controlPoints[i][j].z;
                     }
                 }
-                bezierPointsHorizontally[k].push(x, y, z)
+                row.push(x, y, z)
             }
-            k++;
+            bezierPointsHorizontally.push(row)
         }
-        console.log(bezierPointsHorizontally)
-        k = 0
+
         for (let u = 0; u <= 1; u = Number((u + 0.01).toFixed(2))) {
+            let row: number[] = []
             for (let v = 0; v <= 1; v = Number((v + 0.1).toFixed(2))) {
                 let x = 0, y = 0, z = 0;
                 for (let i = 0; i < n; i++) {
                     for (let j = 0; j < m; j++) {
+                        //TODO: Spagetizzük meg, hogy itt if legyen és úgy döntse el, hogy vertikális vagy horizontális-e a cucc?
                         x += bezierBaseFunction(n - 1, i, u) * bezierBaseFunction(m - 1, j, v) * controlPoints[i][j].x;
                         y += bezierBaseFunction(n - 1, i, u) * bezierBaseFunction(m - 1, j, v) * controlPoints[i][j].y;
                         z += bezierBaseFunction(n - 1, i, u) * bezierBaseFunction(m - 1, j, v) * controlPoints[i][j].z;
                     }
                 }
-                bezierPointsVertically[k].push(x, y, z)
+                row.push(x, y, z)
             }
-            k++;
+            bezierPointsVertically.push(row)
         }
 
 
