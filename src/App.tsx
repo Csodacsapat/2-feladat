@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import SideMenu from "./component/SideMenu/SideMenu";
 import {Box} from "@mui/material";
 import {DrawData} from "./utils/DrawData";
+import { SurfaceContainer } from './component/SurfaceContainer';
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
   return (
     <div className="App">
         <Box sx={{display:"flex"}}>
+            <SurfaceContainer drawData={drawData}></SurfaceContainer>
             <SideMenu sendDataBack={getDataBack}/>
         </Box>
     </div>
