@@ -1,4 +1,4 @@
-import {DrawData} from "../DrawData";
+import {DrawData} from "../../types/DrawData";
 import {Points} from "../../types/Points";
 import {linSpace} from "./linspace";
 

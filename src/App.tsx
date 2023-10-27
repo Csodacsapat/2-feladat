@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SideMenu from "./component/SideMenu/SideMenu";
 import {Box} from "@mui/material";
-import {DrawData} from "./utils/DrawData";
+import {DrawData} from "./types/DrawData";
 import { SurfaceContainer } from './component/SurfaceContainer';
 
 function App() {
