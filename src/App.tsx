@@ -11,11 +11,12 @@ function App() {
     const getDataBack = (data:DrawData) =>{
         setDrawData(data)
     }
+    console.log("app")
 
   return (
     <div className="App">
         <Box sx={{display:"flex"}}>
-            <SurfaceContainer drawData={drawData}></SurfaceContainer>
+            {(drawData.xPoint != 0 || drawData.yPoint != 0) && <SurfaceContainer drawData={drawData}></SurfaceContainer>}
             <SideMenu sendDataBack={getDataBack}/>
         </Box>
     </div>
