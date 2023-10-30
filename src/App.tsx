@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SideMenu from "./component/SideMenu/SideMenu";
 import {Box} from "@mui/material";
-import {DrawData} from "./utils/DrawData";
+import {DrawData} from "./types/DrawData";
 import { SurfaceContainer } from './component/SurfaceContainer';
 
 function App() {
@@ -11,11 +11,12 @@ function App() {
     const getDataBack = (data:DrawData) =>{
         setDrawData(data)
     }
+    console.log("app")
 
   return (
     <div className="App">
         <Box sx={{display:"flex"}}>
-            <SurfaceContainer drawData={drawData}></SurfaceContainer>
+            {(drawData.xPoint != 0 || drawData.yPoint != 0) && <SurfaceContainer drawData={drawData}></SurfaceContainer>}
             <SideMenu sendDataBack={getDataBack}/>
         </Box>
     </div>

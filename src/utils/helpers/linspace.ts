@@ -1,5 +1,5 @@
-export function linSpace(numOfSpaces:number,startValue:number = 0, stopValue:number = 1) :number[] {
-    if(numOfSpaces < 1){
+export function linSpace(numOfSpaces: number, startValue: number = 0, stopValue: number = 1): number[] {
+    if (numOfSpaces < 1) {
         return [];
     }
     const arr = [];
