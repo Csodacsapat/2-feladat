@@ -60,16 +60,7 @@ export function SurfaceContainer({drawData}: props) {
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;/*
-        canvas.addEventListener("click",(e)=>{
-            const x = e.clientX - canvas.getBoundingClientRect().left;
-            const y = e.clientY - canvas.getBoundingClientRect().top;
-            const normalizedX = (x / canvas.width) * 2 - 1;
-            const normalizedY = 1 - (y / canvas.height) * 2;
-
-            let point:Points|null = getNearestPoint(normalizedX,normalizedY,controlPoints);
-
-        })*/
+        if (!canvas) return;
 
         canvas.addEventListener("mousedown",(e)=>onMouseDown(e,controlPoints,canvas),false)
         canvas.addEventListener("mouseup",onMouseUp,false)
