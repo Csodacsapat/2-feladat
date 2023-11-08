@@ -1,8 +1,12 @@
 export const vertexShaderSource = `
       attribute vec3 controlPoints;
+      attribute vec4 proj;
+      attribute vec4 view;
+      
       void main(void) {
-        gl_Position = vec4(controlPoints, 1.0);
+        gl_Position =  view *  vec4(controlPoints, 1.0);
         gl_PointSize = 5.0;
+        
       }
     `;
 

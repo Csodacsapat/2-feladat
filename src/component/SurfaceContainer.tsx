@@ -7,10 +7,14 @@ import {drawBezierSurface} from "../utils/drawing/drawBezierSurface";
 import {drawPoints} from "../utils/drawing/drawPoints";
 import {onMouseDown, onMouseMove, onMouseUp} from "../utils/listener/listeners";
 import {Indexes} from "../types/Indexes";
+import {applyFOV, generateFOV} from "./Projection";
 
 type props = {
     drawData: DrawData
 }
+
+export const canvasWidth= 800;
+export const canvasHeight= 600;
 
 export function SurfaceContainer({drawData}: props) {
     console.log("render")
@@ -87,9 +91,12 @@ export function SurfaceContainer({drawData}: props) {
         if (!gl || !pointsProgram.current || !program.current) {
             return;
         }
+
+        applyFOV(gl, controlPoints.flat(), pointsProgram.current);
         drawPoints(gl, controlPoints.flat(), pointsProgram.current);
         drawBezierSurface(gl, controlPoints, program.current);
+
     }, [controlPoints]);
 
-    return <canvas ref={canvasRef} width={800} height={600}/>
+    return <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight}/>
 }
