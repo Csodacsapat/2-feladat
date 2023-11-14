@@ -7,7 +7,8 @@ import {drawBezierSurface} from "../utils/drawing/drawBezierSurface";
 import {drawPoints} from "../utils/drawing/drawPoints";
 import {onMouseDown, onMouseMove, onMouseUp} from "../utils/listener/listeners";
 import {Indexes} from "../types/Indexes";
-import {applyFOV, generateFOV} from "./Projection";
+import {applyFOV, generateFOV, view} from "./Projection";
+import {mat4} from "gl-matrix";
 
 type props = {
     drawData: DrawData
@@ -17,7 +18,6 @@ export const canvasWidth= 800;
 export const canvasHeight= 600;
 
 export function SurfaceContainer({drawData}: props) {
-    console.log("render")
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const program: MutableRefObject<WebGLProgram | null> = useRef(null);
     const pointsProgram: MutableRefObject<WebGLProgram | null> = useRef(null);
@@ -85,6 +85,7 @@ export function SurfaceContainer({drawData}: props) {
                 canvas.removeEventListener("mouseup",()=>onMouseUp,false);
                 canvas.removeEventListener("mousemove",()=>onMouseMove,false);
                 console.log("err")
+                console.log(e)
             }
         }), false)
         const gl = canvas.getContext('webgl2', {antialias: true});
@@ -92,7 +93,6 @@ export function SurfaceContainer({drawData}: props) {
             return;
         }
 
-        applyFOV(gl, controlPoints.flat(), pointsProgram.current);
         drawPoints(gl, controlPoints.flat(), pointsProgram.current);
         drawBezierSurface(gl, controlPoints, program.current);
 

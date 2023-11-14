@@ -1,9 +1,7 @@
-import {canvasWidth} from "./SurfaceContainer";
-import {canvasHeight} from "./SurfaceContainer";
-import {Points} from "../types/Points";
-import {vec4} from 'gl-matrix';
+import {canvasHeight, canvasWidth} from "./SurfaceContainer";
 import {tan} from "mathjs";
-//let mat4 = require('gl-mat4');
+import {mat4, vec4} from "gl-matrix"
+
 
 export function generateFOV(angle : number, nearCull : number, farCull : number ){
     let aspect = canvasWidth/canvasHeight;
@@ -14,55 +12,40 @@ export function generateFOV(angle : number, nearCull : number, farCull : number 
     let sZ = -1 * (farCull + nearCull) / (farCull - nearCull);
     let pZ = -1 * (2 * farCull * nearCull) / (farCull - nearCull);
 
-    let projectionMatrix = [sX , 0, 0, 0, 0, sY, 0, 0, 0, 0, sZ, -1, 0, 0, pZ, 0];
-    return projectionMatrix;
+    const fovMatrix = mat4.create()
+    mat4.set(fovMatrix,sX, 0, 0, 0,
+        0, sY, 0, 0,
+        0, 0, sZ, -1,
+        0, 0, pZ, 0)
+    return fovMatrix; //proj_mat
 
 }
-
 
 export function view(){
+    // ezt kell majd növelni, hogy forogjon a test.
+    const camYaw = 0.5
+    //itt az utolsó paramétert kell növelni/csökkenteni hogy közelebb/ távolabb menjen tölünk a test;
+    const cam_pos = [ 0, 0, 2.0 ]
+    const T:mat4 = mat4.create();
+    const identity = mat4.create()
+    mat4.translate(T,mat4.identity(identity),[-cam_pos[0],-cam_pos[1],-cam_pos[2]]);
+    const R:mat4 = mat4.create();
+    mat4.identity(R);
+    mat4.rotateY(R,R,camYaw);
+    const view_mat = mat4.create();
+    mat4.multiply(view_mat,T,R);
+    return view_mat;
 
-    let cameraPosition = [0, 0, 2];
-    //let cameraSpeed = 0;
-    //let cameraYSpeed = 0;
-    //let cameraY = 0;
-    //let T = vec4.fromValues(-1*cameraPosition[0], -1*cameraPosition[1], -1*cameraPosition[2], 1);
-    /*let T = [1, 0, 0, 0,
-                       0, 1, 0, 0,
-                       0, 0, 1, 0,
-                       -1*cameraPosition[0], -1*cameraPosition[1], -1*cameraPosition[2], 1];*/
-
-    let T = [1, 0, 0, 0,
-                       0, 1, 0, 0,
-                       0, 0, 1, 0,
-                       0, 0, 0, 1];
-
-
-    return T;
 }
 
-
-export function applyFOV(gl: WebGL2RenderingContext, points: Points[],pointsProgram:WebGLProgram){
+export function applyFOV(gl: WebGL2RenderingContext,pointsProgram:WebGLProgram){
     let fovMatrix = generateFOV(70, 0.1, 100 );
     let viewT = view();
 
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fovMatrix), gl.STATIC_DRAW);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(viewT), gl.STATIC_DRAW);
-
-    //let attribLocationFov = gl.getAttribLocation(pointsProgram as WebGLProgram, "proj");
-    let attribLocationView = gl.getAttribLocation(pointsProgram as WebGLProgram, "view");
-
-    //gl.vertexAttribPointer(attribLocationFov, 4, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribPointer(attribLocationView, 4, gl.FLOAT, false, 0, 0);
-    //gl.enableVertexAttribArray(attribLocationFov);
-    gl.enableVertexAttribArray(attribLocationView);
-
-    //console.log(fov);
-
-    console.log(fovMatrix);
-    console.log(viewT);
+    const uModelViewMatrix = gl.getUniformLocation(pointsProgram, "view");
+    gl.uniformMatrix4fv(uModelViewMatrix, false, viewT);
+    const projMat = gl.getUniformLocation(pointsProgram, "proj");
+    gl.uniformMatrix4fv(projMat, false, fovMatrix);
 
 }
 
