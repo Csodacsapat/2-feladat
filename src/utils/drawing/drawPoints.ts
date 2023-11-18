@@ -1,5 +1,4 @@
 import {Points} from "../../types/Points";
-import {applyFOV} from "../../component/Projection";
 
 export function drawPoints(gl: WebGL2RenderingContext, points: Points[],pointsProgram:WebGLProgram) {
 
@@ -17,7 +16,6 @@ export function drawPoints(gl: WebGL2RenderingContext, points: Points[],pointsPr
     gl.vertexAttribPointer(attribLocation, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(attribLocation);
 
-    applyFOV(gl,pointsProgram)
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);

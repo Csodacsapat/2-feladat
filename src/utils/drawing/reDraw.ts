@@ -1,5 +1,5 @@
 import {drawPoints} from "./drawPoints";
-import {drawBezierSurface} from "./drawBezierSurface";
+import {drawBezierSurface} from "./bezier/drawBezierSurface";
 import {Points} from "../../types/Points";
 
 export function redraw(canvas:any,controlPoints:Points[][],pointsProgram:WebGLProgram,bezierProgram:WebGLProgram){
