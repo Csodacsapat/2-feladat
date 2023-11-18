@@ -2,7 +2,6 @@ import {canvasHeight, canvasWidth} from "../../component/SurfaceContainer";
 import {tan} from "mathjs";
 import {mat4} from "gl-matrix"
 
-
 export function generateFOV(angle : number, nearCull : number, farCull : number ){
     let aspect = canvasWidth/canvasHeight;
     let fov = angle * Math.PI/180;
@@ -50,5 +49,3 @@ export function applyFOV(gl: WebGL2RenderingContext,pointsProgram:WebGLProgram ,
     gl.uniform1f(wLocation, wValue<0?1.0:wValue);
 
 }
-
-

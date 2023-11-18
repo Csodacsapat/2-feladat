@@ -115,9 +115,6 @@ export function drawBSplineSurface(gl: WebGL2RenderingContext, controlPoints: Po
                 z/=weightSum;
             }
 
-            //if(x==0 && y ==0 && z==0){
-            /* continue;
-         }*/
             row.push(x, y, z);
         }
         bSplineHorizontally.push(row);
@@ -125,6 +122,5 @@ export function drawBSplineSurface(gl: WebGL2RenderingContext, controlPoints: Po
 
     drawLines(gl, bSplineHorizontally, program);
     //drawLines(gl, bSplinePointsVertically, program);
-
 
 }

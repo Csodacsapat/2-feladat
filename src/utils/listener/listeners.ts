@@ -14,16 +14,7 @@ export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRot
     if (controlPoints.length === 0 || controlPoints[0].length === 0) {
         return;
     }
-    /* const rect = canvas.getBoundingClientRect();
-     const x = event.clientX - rect.left;
-     const y = event.clientY - rect.top;
-     const normalizedX = (x / canvas.width) * 2 - 1;
-     const normalizedY = 1 - (y / canvas.height) * 2;
 
-     [selectedPoint,pointIndexes] = getNearestPoint(normalizedX, normalizedY,controlPoints);
-     if (selectedPoint) {
-         isDragging = true;
-     }*/
     const proj_mat = generateFOV(70, 0.1, 100);
     const view_mat = view(camRotateY, camRotateX, objectMove);
     const rect = canvas.getBoundingClientRect();
@@ -40,32 +31,8 @@ export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRot
 
     vec4.transformMat4(kat1,vec4.fromValues(x,y,0,wValue),multipleMatrix);
 
-    //console.log(multipleMatrix);
-    //console.log(vec4.fromValues(x,y,0,1));
-    console.log(x,y);
-    console.log(kat1);
-    console.log(controlPoints[2][2]);
+
     [selectedPoint,pointIndexes] = getNearestPoint(kat1[0]*kat1[3], kat1[1]/kat1[2],controlPoints);
-    console.log(pointIndexes);
-    console.log(selectedPoint);
-    //console.log(kat2);
-    // Invertált projekciós és nézetmátrix számítása
-
-    /*const pontok:Points[][] = new Array(controlPoints.length).fill(new Array(controlPoints[0].length));
-    controlPoints.map((row,iIndex)=>{
-        row.map((point,jIndex)=>{
-            const coord: vec4 = vec4.create();
-            const kat = vec4.create();
-            vec4.set(kat,point.x,point.y,point.z,wValue);
-            vec4.transformMat4(coord, kat, multipleMatrix);
-            pontok[iIndex][jIndex] = {x:coord[0],y:coord[1],z:coord[3]}
-        })
-    })*/
-    // Kattintási pont visszaszámolása WebGL térbe
-
-    //vec4.transformMat4(clickedPoint, clickedPoint, inverseMat);
-
-    //checkClickedPoint(vec3.fromValues(result[0],result[1],result[2]),controlPoints);
 }
 
 function checkClickedPoint(clickCoords: vec3, controlPoints: Points[][]) {
