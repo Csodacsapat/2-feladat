@@ -1,7 +1,7 @@
 import {Points} from "../../types/Points";
 import {Indexes} from "../../types/Indexes";
 
-const closeEnough: number = 0.03
+const closeEnough: number = 0.003
 
 export function getNearestPoint(normalizedX: number, normalizedY: number, controlPoints: Points[][]) {
     let nearestPoint = null;

@@ -119,9 +119,9 @@ export function SurfaceContainer({drawData}: props) {
     return <canvas
         onKeyDown={handleKeyDown}
         onWheel={(event:React.WheelEvent)=>handleWheel(event,wValue,setWValue)}
-        onMouseUp={(event)=>onMouseUp}
+        onMouseUp={(event:any)=>onMouseUp(event)}
         onMouseDown={(event:any)=>onMouseDown(event,controlPoints,camRotateY,camRotateX,objectMove,wValue,canvasRef.current)}
-        onMouseMove={(event:any)=>onMouseMove(event,canvasRef.current, (indexes: Indexes, newX: number, newY: number, newZ: number)=>{
+        onMouseMove={(event:any)=>onMouseMove(event,canvasRef.current, camRotateY,camRotateX,objectMove,wValue,(indexes: Indexes, newX: number, newY: number, newZ: number)=>{
             if (indexes.i < 0 || indexes.j < 0) {
                 return;
             }
@@ -130,6 +130,7 @@ export function SurfaceContainer({drawData}: props) {
             newControlPoints[indexes.i][indexes.j].y = newY;
             newControlPoints[indexes.i][indexes.j].z = newZ;
             setControlPoints(newControlPoints)
+
         })}
         ref={canvasRef}
         width={canvasWidth}

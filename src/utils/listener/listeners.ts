@@ -4,10 +4,12 @@ import {Indexes} from "../../types/Indexes";
 import {mat4, vec3, vec4} from "gl-matrix";
 import {generateFOV, view} from "../helpers/projection";
 import React, {SetStateAction} from "react";
+import {number} from "mathjs";
 
 let isDragging: boolean = false;
 let selectedPoint: Points | null | {} = null;
 let pointIndexes: Points | Indexes | null = {i: -1, j: -1};
+let actualW = 1;
 
 export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRotateY: number, camRotateX: number, objectMove: number[],wValue:number, canvas: any) {
 
@@ -21,40 +23,37 @@ export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRot
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    // Normalizáljuk a kattintási koordinátákat a [-1, 1] tartományba
     const x = mouseX / canvas.width * 2 - 1;
     const y = 1 - mouseY / canvas.height * 2;
     const multipleMatrix = mat4.create();
     mat4.multiply(multipleMatrix, proj_mat, view_mat);
 
-    const kat1 = vec4.create();
+    const movedControlPoints:Points[][] = new Array(controlPoints.length)
+    for(let i=0; i<controlPoints.length;i++){
+        movedControlPoints[i] = [];
+        for (let j=0 ;j<controlPoints[i].length;j++){
+            const pointOnCanvasTransformed = vec4.create();
+            vec4.transformMat4(pointOnCanvasTransformed,vec4.fromValues(controlPoints[i][j].x,controlPoints[i][j].y,0,wValue),multipleMatrix)
+            vec4.scale(pointOnCanvasTransformed,pointOnCanvasTransformed,1/pointOnCanvasTransformed[3])
+            movedControlPoints[i].push( {
+                x: pointOnCanvasTransformed[0],
+                y: pointOnCanvasTransformed[1],
+                z: pointOnCanvasTransformed[2]
+            })
 
-    vec4.transformMat4(kat1,vec4.fromValues(x,y,0,wValue),multipleMatrix);
-
-
-    [selectedPoint,pointIndexes] = getNearestPoint(kat1[0]*kat1[3], kat1[1]/kat1[2],controlPoints);
-}
-
-function checkClickedPoint(clickCoords: vec3, controlPoints: Points[][]) {
-    const epsilon = 0.2; // Egy kis eltérés elfogadása a kattintás területén
-
-    for (let i = 0; i < controlPoints.length; i++) {
-        for (let j = 0; j < controlPoints[i].length; j++) {
-            const point = controlPoints[i][j];
-            const distance = vec3.distance(clickCoords, [point.x, point.y, point.z]);
-
-            if (distance < epsilon) {
-                console.log('Kattintás a(z) ' + i + '. sor, ' + j + '. oszlop négyzetsíkra.');
-                //it kéne mozgatni
-                return;
-            }
         }
     }
 
-    console.log('Nincs találat a kattintásra.');
-};
+    [selectedPoint,pointIndexes] = getNearestPoint(x, y,movedControlPoints);
 
-export function onMouseMove(event: MouseEvent, canvas: any, callback: Function) {
+    if(selectedPoint){
+        isDragging= true;
+    }
+
+
+}
+
+export function onMouseMove(event: MouseEvent, canvas: any,camRotateY: number, camRotateX: number, objectMove: number[],wValue:number, callback: Function) {
     if (isDragging) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -62,7 +61,25 @@ export function onMouseMove(event: MouseEvent, canvas: any, callback: Function) 
         const normalizedX = (x / canvas.width) * 2 - 1;
         const normalizedY = 1 - (y / canvas.height) * 2;
 
-        callback(pointIndexes, normalizedX, normalizedY, 0);
+        const proj_mat = generateFOV(70, 0.1, 100);
+        const view_mat = view(camRotateY, camRotateX, objectMove);
+
+        const invProj = mat4.create()
+        const invView = mat4.create();
+
+        mat4.invert(invProj,proj_mat);
+        mat4.invert(invView,view_mat);
+        const multiple = mat4.create();
+        mat4.multiply(multiple,invView,invProj)
+        const multipleMatrix = mat4.create();
+        mat4.multiply(multipleMatrix, proj_mat, view_mat);
+        const vec42 = vec4.create();
+        vec4.transformMat4(vec42,vec4.fromValues(normalizedX,normalizedY,0,wValue),multipleMatrix)
+        vec4.transformMat4(vec42,vec42,multiple)
+        vec4.scale(vec42,vec42,1/vec42[3])
+        console.log(normalizedX)
+        console.log(vec42[0])
+        //callback(pointIndexes, normalizedX/0.7175, normalizedY/0.95, vec42[2]);
     }
 }
 

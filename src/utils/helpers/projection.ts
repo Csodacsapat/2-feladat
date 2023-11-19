@@ -20,7 +20,7 @@ export function generateFOV(angle : number, nearCull : number, farCull : number 
 
 }
 
-export function view(camRotateY:number=0,camRotateX:number=0,objectMove:number[]=[0,0,1.5]){
+export function view(camRotateY:number=0,camRotateX:number=0,objectMove:number[]){
     const T:mat4 = mat4.create();
     mat4.identity(T);
     const identity = mat4.create()
