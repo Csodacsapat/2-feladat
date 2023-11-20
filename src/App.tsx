@@ -11,7 +11,6 @@ function App() {
     const getDataBack = (data:DrawData) =>{
         setDrawData(data)
     }
-    console.log("app")
 
   return (
     <div className="App">

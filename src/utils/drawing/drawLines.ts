@@ -1,4 +1,4 @@
-export function drawLines(gl:WebGL2RenderingContext,arrayOfPoints:number[][],program:WebGLProgram){
+export function drawLines(gl: WebGL2RenderingContext, arrayOfPoints: number[][], program: WebGLProgram) {
     const vertexBuffer = gl.createBuffer();
     for (let i = 0; i < arrayOfPoints.length; i++) {
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);

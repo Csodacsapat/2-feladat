@@ -3,7 +3,7 @@ export function linSpace(numOfSpaces: number, startValue: number = 0, stopValue:
         return [];
     }
     const arr = [];
-    const step = Math.abs((stopValue - startValue)) / (numOfSpaces - 1);
+    const step = Math.abs((stopValue - startValue)) / (numOfSpaces -1);
     for (let i = 0; i < numOfSpaces; i++) {
         arr.push(startValue + (step * i));
     }

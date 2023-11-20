@@ -3,8 +3,8 @@ import {Points} from "../../types/Points";
 import {linSpace} from "./linspace";
 
 export function createControlPoints(drawData: DrawData): Points[][] {
-    const linspaceX = linSpace(drawData.xPoint, -0.8, 0.8)
-    const linspaceY = linSpace(drawData.yPoint, -0.8, 0.8)
+    const linspaceX = linSpace(drawData.xPoint, -1, 1)
+    const linspaceY = linSpace(drawData.yPoint, -1, 1)
 
     const calculatedPoints: Points[][] = [];
     for (let i = 0; i < linspaceX.length; i++) {
