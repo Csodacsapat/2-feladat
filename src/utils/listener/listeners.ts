@@ -5,13 +5,14 @@ import {mat4, vec3, vec4} from "gl-matrix";
 import {generateFOV, view} from "../helpers/projection";
 import React, {SetStateAction} from "react";
 import {number} from "mathjs";
+import {Coordinates} from "../../types/SelectedPoint";
 
 let isDragging: boolean = false;
 let selectedPoint: Points | null | {} = null;
 let pointIndexes: Points | Indexes | null = {i: -1, j: -1};
 let actualW = 1;
 
-export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRotateY: number, camRotateX: number, objectMove: number[],wValue:number, canvas: any) {
+export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRotateY: number, camRotateX: number, objectMove: number[],wValue:number, canvas: any, setEditedCoordinate: React.Dispatch<React.SetStateAction<Coordinates>>) {
 
     if (controlPoints.length === 0 || controlPoints[0].length === 0) {
         return;
@@ -44,7 +45,16 @@ export function onMouseDown(event: MouseEvent, controlPoints: Points[][], camRot
         }
     }
 
+    console.log(vec4.scale(vec4.create(),vec4.fromValues(movedControlPoints[2][0].x,movedControlPoints[2][0].y,movedControlPoints[2][0].z,1.5),1.5));
     [selectedPoint,pointIndexes] = getNearestPoint(x, y,movedControlPoints);
+    // @ts-ignore
+    if (pointIndexes || pointIndexes.i || pointIndexes.j) {
+        console.log(pointIndexes)
+        // @ts-ignore
+        const selectedCoordinates: Coordinates = {x: pointIndexes.i, y:pointIndexes.j}
+        setEditedCoordinate(selectedCoordinates)
+    }
+
 
     if(selectedPoint){
         isDragging= true;
